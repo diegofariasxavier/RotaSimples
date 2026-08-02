@@ -1,0 +1,9 @@
+{
+  "name": "Rota Simples - meutudo",
+  "short_name": "Rota Simples",
+  "start_url": "./motorista.html",
+  "display": "standalone",
+  "background_color": "#f4f3f8",
+  "theme_color": "#57499f",
+  "icons": []
+}
