@@ -27,12 +27,14 @@
 
     <div id="telaIniciar" class="card" style="text-align:center; display:none;">
       <h2 style="color:var(--indigo); font-family:'Montserrat',sans-serif;">Rota <span id="idRotaLabel"></span></h2>
+      <p><strong>Data da rota:</strong> <span id="dataRotaLabel"></span></p>
       <p><span id="veiculoLabel"></span></p>
       <p><span id="qtdPedidosLabel"></span> pedidos</p>
       <button class="btn-primario" onclick="iniciarRota()">Iniciar Rotas</button>
     </div>
 
     <div id="telaPedidos" style="display:none;">
+      <button class="btn-secundario" style="width:auto; padding:8px 16px; margin-bottom:12px;" onclick="voltarParaTelaIniciar()">← Voltar</button>
       <div id="listaPedidos"></div>
       <button class="btn-primario" onclick="finalizarRota()" style="background:var(--indigo);">Finalizar Rota</button>
     </div>
@@ -92,10 +94,11 @@
     function renderizar() {
       if (!rotaAtual) { mostrarTela('semRota'); return; }
       localStorage.setItem('rota_simples_ultimo_idrota', rotaAtual.idRota);
-      document.getElementById('tituloTopo').textContent = 'Rota ' + rotaAtual.idRota;
+      document.getElementById('tituloTopo').textContent = 'Rota ' + rotaAtual.idRota + ' — ' + formatarDataBR(rotaAtual.data);
 
       if (rotaAtual.statusGeral === 'NAO_INICIADA') {
         document.getElementById('idRotaLabel').textContent = rotaAtual.idRota;
+        document.getElementById('dataRotaLabel').textContent = formatarDataBR(rotaAtual.data);
         document.getElementById('veiculoLabel').textContent = rotaAtual.veiculo;
         document.getElementById('qtdPedidosLabel').textContent = pedidos.length;
         mostrarTela('iniciar');
@@ -103,6 +106,18 @@
         renderizarPedidos();
         mostrarTela('pedidos');
       }
+    }
+
+    function formatarDataBR(dataStr) {
+      const partes = String(dataStr).slice(0, 10).split('-');
+      if (partes.length !== 3) return dataStr;
+      return `${partes[2]}/${partes[1]}/${partes[0]}`;
+    }
+
+    function voltarParaTelaIniciar() {
+      // Navegação simples pra revisar a tela anterior — não cancela
+      // o início da rota que já foi registrado no servidor.
+      mostrarTela('iniciar');
     }
 
     function mostrarTela(nome) {

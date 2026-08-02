@@ -1,4 +1,4 @@
-const CACHE_NOME = 'rota-simples-v1';
+const CACHE_NOME = 'rota-simples-v2';
 const ARQUIVOS_SHELL = [
   './motorista.html',
   './css/style.css',
@@ -24,15 +24,21 @@ self.addEventListener('activate', (evento) => {
   self.clients.claim();
 });
 
-// Estratégia: cache primeiro pro "shell" do app (HTML/CSS/JS).
-// Chamadas de API (POST pro Apps Script) sempre vão direto pra rede -
-// não fazem sentido em cache, e se falharem é a fila do IndexedDB que assume.
+// Estratégia: REDE PRIMEIRO. Sempre tenta buscar a versão mais nova
+// no GitHub Pages; só usa a cópia salva se estiver sem sinal. Isso evita
+// o problema de "atualizei o arquivo mas o celular continua mostrando
+// a versão antiga" — o app só usa o cache como plano B, nunca como
+// primeira opção.
 self.addEventListener('fetch', (evento) => {
   if (evento.request.method !== 'GET') return;
 
   evento.respondWith(
-    caches.match(evento.request).then((respostaCache) => {
-      return respostaCache || fetch(evento.request).catch(() => respostaCache);
-    })
+    fetch(evento.request)
+      .then((respostaRede) => {
+        const copia = respostaRede.clone();
+        caches.open(CACHE_NOME).then((cache) => cache.put(evento.request, copia));
+        return respostaRede;
+      })
+      .catch(() => caches.match(evento.request))
   );
 });
