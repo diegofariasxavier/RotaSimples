@@ -13,7 +13,10 @@
       <img src="assets/logo.png" alt="Logo" class="logo-topo">
       <span>Roteirizador</span>
     </span>
-    <span class="sair" onclick="encerrarSessao()">Sair</span>
+    <span style="display:flex; align-items:center; gap:16px;">
+      <span id="nomeUsuarioLogado" style="font-weight:600; opacity:0.9;"></span>
+      <span class="sair" onclick="encerrarSessao()">Sair</span>
+    </span>
   </div>
 
   <div class="container">
@@ -71,7 +74,8 @@
 
   <script src="js/api.js"></script>
   <script>
-    exigirSessao();
+    const sessao = exigirSessao();
+    document.getElementById('nomeUsuarioLogado').textContent = sessao ? sessao.usuario : '';
     let contadorPedidos = 0;
     let grafico = null;
 

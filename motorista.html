@@ -13,7 +13,10 @@
       <img src="assets/logo.png" alt="Logo" class="logo-topo">
       <span id="tituloTopo">Rota Simples</span>
     </span>
-    <span class="sair" onclick="encerrarSessao()">Sair</span>
+    <span style="display:flex; align-items:center; gap:16px;">
+      <span id="nomeUsuarioLogado" style="font-weight:600; opacity:0.9;"></span>
+      <span class="sair" onclick="encerrarSessao()">Sair</span>
+    </span>
   </div>
 
   <div class="container">
@@ -41,6 +44,7 @@
   <script src="js/db.js"></script>
   <script>
     const sessao = exigirSessao('MOTORISTA');
+    document.getElementById('nomeUsuarioLogado').textContent = sessao ? sessao.usuario : '';
     let rotaAtual = null;
     let pedidos = [];
 
