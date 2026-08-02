@@ -95,7 +95,7 @@
       const selV = document.getElementById('selVeiculo');
       if (veiculos.ok && veiculos.veiculos.length) {
         veiculos.veiculos.forEach(v => {
-          selV.innerHTML += `<option value="${v.placa}">${v.placa} - ${v.modelo} (${v.tipo})</option>`;
+          selV.innerHTML += `<option value="${v.placa}">${v.placa}</option>`;
         });
       } else {
         msg.textContent = (msg.textContent ? msg.textContent + ' ' : '') + 'Não encontrei veículos cadastrados (verifique a aba Veiculos e o nome exato dela no Codigo.gs).';
@@ -196,13 +196,33 @@
     }
 
     async function carregarListaMotoristas() {
-      const resp = await chamarAPI('listarMotoristas', {});
+      const resp = await chamarAPI('listarMotoristasComSenha', {});
       const div = document.getElementById('listaMotoristasCadastrados');
-      div.innerHTML = (resp.motoristas || []).map(m => `
+      div.innerHTML = (resp.motoristas || []).map(m => {
+        const senhaVisivel = m.senha && String(m.senha).length !== 64; // 64 = ainda está em hash antigo
+        return `
         <div class="pedido-item" style="display:flex; justify-content:space-between; align-items:center;">
-          <span>${m.login}</span>
+          <div>
+            <strong>${m.login}</strong><br>
+            <span style="font-size:13px; color:#666;">
+              ${senhaVisivel ? 'Senha: ' + m.senha : 'Senha antiga protegida — redefina abaixo'}
+            </span>
+          </div>
+          <button class="btn-secundario" style="width:auto; padding:8px 14px;" onclick="redefinirSenhaMotorista('${m.login}')">Redefinir senha</button>
         </div>
-      `).join('') || '<p>Nenhum motorista cadastrado ainda.</p>';
+      `;
+      }).join('') || '<p>Nenhum motorista cadastrado ainda.</p>';
+    }
+
+    async function redefinirSenhaMotorista(login) {
+      const novaSenha = prompt(`Nova senha para ${login}:`);
+      if (!novaSenha) return;
+      const resp = await chamarAPI('redefinirSenha', { login, novaSenha });
+      if (resp.ok) {
+        carregarListaMotoristas();
+      } else {
+        alert(resp.erro || 'Erro ao redefinir senha.');
+      }
     }
 
     async function carregarPainel() {
