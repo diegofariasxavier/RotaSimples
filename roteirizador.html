@@ -9,7 +9,10 @@
 </head>
 <body>
   <div class="topo">
-    <span>Roteirizador</span>
+    <span style="display:flex; align-items:center; gap:10px;">
+      <img src="assets/logo.png" alt="Logo" class="logo-topo">
+      <span>Roteirizador</span>
+    </span>
     <span class="sair" onclick="encerrarSessao()">Sair</span>
   </div>
 
@@ -17,6 +20,7 @@
     <div class="card" style="display:flex; gap:8px; padding:8px;">
       <button class="btn-secundario" id="abaCriar" onclick="mostrarAba('criar')" style="border-color:var(--pink-tudo)!important; color:var(--pink-tudo);">Nova rota</button>
       <button class="btn-secundario" id="abaPainel" onclick="mostrarAba('painel')">Painel ao vivo</button>
+      <button class="btn-secundario" id="abaMotoristas" onclick="mostrarAba('motoristas')">Motoristas</button>
     </div>
 
     <!-- ==================== ABA: CRIAR ROTA ==================== -->
@@ -47,6 +51,22 @@
       </div>
       <div id="listaRotasAtivas"></div>
     </div>
+
+    <!-- ==================== ABA: CADASTRAR MOTORISTAS ==================== -->
+    <div id="painelMotoristas" style="display:none;">
+      <div class="card">
+        <label>Nome / login do motorista</label>
+        <input type="text" id="novoLoginMotorista" placeholder="Ex: Motorista 4">
+        <label>Senha</label>
+        <input type="text" id="novaSenhaMotorista" placeholder="Ex: 1234">
+        <button class="btn-primario" onclick="cadastrarMotorista()">Cadastrar motorista</button>
+        <div id="msgMotorista" class="erro-msg"></div>
+      </div>
+      <div class="card">
+        <strong>Motoristas cadastrados</strong>
+        <div id="listaMotoristasCadastrados" style="margin-top:10px;"></div>
+      </div>
+    </div>
   </div>
 
   <script src="js/api.js"></script>
@@ -59,17 +79,27 @@
       const hoje = new Date().toISOString().split('T')[0];
       document.getElementById('inpData').value = hoje;
 
+      const msg = document.getElementById('msgCriar');
+
       const motoristas = await chamarAPI('listarMotoristas', {});
       const selM = document.getElementById('selMotorista');
-      (motoristas.motoristas || []).forEach(m => {
-        selM.innerHTML += `<option value="${m.login}">${m.login}</option>`;
-      });
+      if (motoristas.ok && motoristas.motoristas.length) {
+        motoristas.motoristas.forEach(m => {
+          selM.innerHTML += `<option value="${m.login}">${m.login}</option>`;
+        });
+      } else {
+        msg.textContent = (msg.textContent ? msg.textContent + ' ' : '') + 'Não encontrei motoristas cadastrados (verifique a aba Usuários / perfil = MOTORISTA).';
+      }
 
       const veiculos = await chamarAPI('listarVeiculos', {});
       const selV = document.getElementById('selVeiculo');
-      (veiculos.veiculos || []).forEach(v => {
-        selV.innerHTML += `<option value="${v.placa}">${v.placa} - ${v.modelo} (${v.tipo})</option>`;
-      });
+      if (veiculos.ok && veiculos.veiculos.length) {
+        veiculos.veiculos.forEach(v => {
+          selV.innerHTML += `<option value="${v.placa}">${v.placa} - ${v.modelo} (${v.tipo})</option>`;
+        });
+      } else {
+        msg.textContent = (msg.textContent ? msg.textContent + ' ' : '') + 'Não encontrei veículos cadastrados (verifique a aba Veiculos e o nome exato dela no Codigo.gs).';
+      }
 
       adicionarPedido(); // já começa com 1 campo de pedido
     }
@@ -133,7 +163,46 @@
     function mostrarAba(aba) {
       document.getElementById('painelCriar').style.display = aba === 'criar' ? 'block' : 'none';
       document.getElementById('painelAoVivo').style.display = aba === 'painel' ? 'block' : 'none';
+      document.getElementById('painelMotoristas').style.display = aba === 'motoristas' ? 'block' : 'none';
       if (aba === 'painel') carregarPainel();
+      if (aba === 'motoristas') carregarListaMotoristas();
+    }
+
+    async function cadastrarMotorista() {
+      const login = document.getElementById('novoLoginMotorista').value.trim();
+      const senha = document.getElementById('novaSenhaMotorista').value.trim();
+      const msg = document.getElementById('msgMotorista');
+      msg.textContent = '';
+
+      if (!login || !senha) {
+        msg.textContent = 'Preencha o nome/login e a senha.';
+        return;
+      }
+
+      try {
+        const resp = await chamarAPI('cadastrarUsuario', { login, senha, perfil: 'MOTORISTA' });
+        if (resp.ok) {
+          document.getElementById('novoLoginMotorista').value = '';
+          document.getElementById('novaSenhaMotorista').value = '';
+          carregarListaMotoristas();
+          // Atualiza também o dropdown da tela de criar rota
+          document.getElementById('selMotorista').innerHTML += `<option value="${login}">${login}</option>`;
+        } else {
+          msg.textContent = resp.erro || 'Erro ao cadastrar.';
+        }
+      } catch (e) {
+        msg.textContent = 'Sem conexão. Tente novamente.';
+      }
+    }
+
+    async function carregarListaMotoristas() {
+      const resp = await chamarAPI('listarMotoristas', {});
+      const div = document.getElementById('listaMotoristasCadastrados');
+      div.innerHTML = (resp.motoristas || []).map(m => `
+        <div class="pedido-item" style="display:flex; justify-content:space-between; align-items:center;">
+          <span>${m.login}</span>
+        </div>
+      `).join('') || '<p>Nenhum motorista cadastrado ainda.</p>';
     }
 
     async function carregarPainel() {
@@ -148,7 +217,7 @@
           chart: { type: 'bar', height: 220 },
           series: [{ name: 'Pedidos', data: [totalSaidos, totalEntregues] }],
           xaxis: { categories: ['Em rota (total)', 'Entregues'] },
-          colors: ['#57499f']
+          colors: ['#22346a']
         });
         grafico.render();
       } else {

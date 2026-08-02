@@ -1,7 +1,7 @@
 :root {
-  --pink-tudo: #ec0074;
-  --indigo: #57499f;
-  --indigo-escuro: #3d3370;
+  --pink-tudo: #f69221;      /* laranja da logo */
+  --indigo: #22346a;         /* azul escuro da logo */
+  --indigo-escuro: #182548;  /* variação mais escura, pra hover/detalhes */
   --cinza-fundo: #f4f3f8;
   --cinza-borda: #e2e0ec;
   --texto: #2b2640;
@@ -9,6 +9,17 @@
   --alerta: #c47000;
   --erro: #d4183d;
   --raio: 14px;
+}
+
+.logo-topo {
+  height: 32px;
+  display: block;
+}
+
+.logo-login {
+  height: 64px;
+  display: block;
+  margin: 0 auto 18px;
 }
 
 * { box-sizing: border-box; }
