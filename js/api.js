@@ -1,5 +1,5 @@
 // PREENCHA com a URL do Web App publicado (Implantar > Nova implantação > Executar como você > Acesso: Qualquer pessoa)
-const API_URL = 'COLE_AQUI_A_URL_DO_WEB_APP';
+const API_URL = 'https://script.google.com/macros/s/AKfycbxSx7lz2jrzP7sQ7jIYSUn_TuKIkAMj830tnNVFzTPIeM8rcq4qVJY211iEhlbS8Yn_/exec';
 
 /**
  * Chama a API do Apps Script.
