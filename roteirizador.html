@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rota Simples - Roteirizador</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/apexcharts/3.45.1/apexcharts.min.js"></script>
+</head>
+<body>
+  <div class="topo">
+    <span>Roteirizador</span>
+    <span class="sair" onclick="encerrarSessao()">Sair</span>
+  </div>
+
+  <div class="container">
+    <div class="card" style="display:flex; gap:8px; padding:8px;">
+      <button class="btn-secundario" id="abaCriar" onclick="mostrarAba('criar')" style="border-color:var(--pink-tudo)!important; color:var(--pink-tudo);">Nova rota</button>
+      <button class="btn-secundario" id="abaPainel" onclick="mostrarAba('painel')">Painel ao vivo</button>
+    </div>
+
+    <!-- ==================== ABA: CRIAR ROTA ==================== -->
+    <div id="painelCriar">
+      <div class="card">
+        <label>Motorista</label>
+        <select id="selMotorista"></select>
+
+        <label>Veículo</label>
+        <select id="selVeiculo"></select>
+
+        <label>Data da operação</label>
+        <input type="date" id="inpData">
+      </div>
+
+      <div id="listaPedidosForm"></div>
+
+      <div class="btn-mais" onclick="adicionarPedido()">+</div>
+
+      <button class="btn-primario" onclick="salvarRota()">Salvar rota</button>
+      <div id="msgCriar" class="erro-msg"></div>
+    </div>
+
+    <!-- ==================== ABA: PAINEL AO VIVO ==================== -->
+    <div id="painelAoVivo" style="display:none;">
+      <div class="card">
+        <div id="graficoResumo"></div>
+      </div>
+      <div id="listaRotasAtivas"></div>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script>
+    exigirSessao();
+    let contadorPedidos = 0;
+    let grafico = null;
+
+    async function iniciar() {
+      const hoje = new Date().toISOString().split('T')[0];
+      document.getElementById('inpData').value = hoje;
+
+      const motoristas = await chamarAPI('listarMotoristas', {});
+      const selM = document.getElementById('selMotorista');
+      (motoristas.motoristas || []).forEach(m => {
+        selM.innerHTML += `<option value="${m.login}">${m.login}</option>`;
+      });
+
+      const veiculos = await chamarAPI('listarVeiculos', {});
+      const selV = document.getElementById('selVeiculo');
+      (veiculos.veiculos || []).forEach(v => {
+        selV.innerHTML += `<option value="${v.placa}">${v.placa} - ${v.modelo} (${v.tipo})</option>`;
+      });
+
+      adicionarPedido(); // já começa com 1 campo de pedido
+    }
+    iniciar();
+
+    function adicionarPedido() {
+      contadorPedidos++;
+      const id = contadorPedidos;
+      const div = document.createElement('div');
+      div.className = 'card';
+      div.id = `pedidoForm${id}`;
+      div.innerHTML = `
+        <label>Número do pedido</label>
+        <input type="text" id="numPedido${id}">
+        <label>Nome do cliente</label>
+        <input type="text" id="cliente${id}">
+        <label>Endereço (rua, número, bairro, cidade/estado)</label>
+        <input type="text" id="endereco${id}">
+        <button class="btn-secundario" style="margin-top:10px; color:var(--erro); border-color:var(--erro)!important;" onclick="document.getElementById('pedidoForm${id}').remove()">Remover</button>
+      `;
+      document.getElementById('listaPedidosForm').appendChild(div);
+    }
+
+    async function salvarRota() {
+      const motorista = document.getElementById('selMotorista').value;
+      const veiculo = document.getElementById('selVeiculo').value;
+      const data = document.getElementById('inpData').value;
+      const msg = document.getElementById('msgCriar');
+      msg.textContent = '';
+
+      const pedidos = [];
+      for (let i = 1; i <= contadorPedidos; i++) {
+        const el = document.getElementById(`pedidoForm${i}`);
+        if (!el) continue;
+        const numeroPedido = document.getElementById(`numPedido${i}`).value.trim();
+        const cliente = document.getElementById(`cliente${i}`).value.trim();
+        const endereco = document.getElementById(`endereco${i}`).value.trim();
+        if (numeroPedido && cliente && endereco) {
+          pedidos.push({ numeroPedido, cliente, endereco });
+        }
+      }
+
+      if (!motorista || !veiculo || !data || pedidos.length === 0) {
+        msg.textContent = 'Preencha motorista, veículo, data e ao menos um pedido completo.';
+        return;
+      }
+
+      try {
+        const resp = await chamarAPI('criarRota', { motorista, veiculo, data, pedidos });
+        if (resp.ok) {
+          alert('Rota criada: ' + resp.idRota);
+          location.reload();
+        } else {
+          msg.textContent = resp.erro || 'Erro ao salvar rota.';
+        }
+      } catch (e) {
+        msg.textContent = 'Sem conexão. Tente novamente.';
+      }
+    }
+
+    function mostrarAba(aba) {
+      document.getElementById('painelCriar').style.display = aba === 'criar' ? 'block' : 'none';
+      document.getElementById('painelAoVivo').style.display = aba === 'painel' ? 'block' : 'none';
+      if (aba === 'painel') carregarPainel();
+    }
+
+    async function carregarPainel() {
+      const resp = await chamarAPI('listarRotasAtivas', {});
+      if (!resp.ok) return;
+
+      const totalEntregues = resp.rotas.reduce((s, r) => s + r.entregues, 0);
+      const totalSaidos = resp.rotas.reduce((s, r) => s + r.totalPedidos, 0);
+
+      if (!grafico) {
+        grafico = new ApexCharts(document.querySelector('#graficoResumo'), {
+          chart: { type: 'bar', height: 220 },
+          series: [{ name: 'Pedidos', data: [totalSaidos, totalEntregues] }],
+          xaxis: { categories: ['Em rota (total)', 'Entregues'] },
+          colors: ['#57499f']
+        });
+        grafico.render();
+      } else {
+        grafico.updateSeries([{ data: [totalSaidos, totalEntregues] }]);
+      }
+
+      const lista = document.getElementById('listaRotasAtivas');
+      lista.innerHTML = resp.rotas.map(r => `
+        <div class="card">
+          <strong>${r.motorista}</strong> — ${r.veiculo}
+          <span class="badge ${r.statusGeral.toLowerCase()}" style="float:right;">${r.statusGeral.replace('_',' ')}</span>
+          <p style="margin:8px 0 0; font-size:13px; color:#666;">
+            ${r.entregues} entregues · ${r.pendentes} pendentes · ${r.naoEntregues} não entregues (de ${r.totalPedidos})
+          </p>
+        </div>
+      `).join('') || '<p>Nenhuma rota criada ainda.</p>';
+    }
+
+    // Refresh automático do painel a cada 15s (padrão dos seus outros dashboards)
+    setInterval(() => {
+      if (document.getElementById('painelAoVivo').style.display !== 'none') carregarPainel();
+    }, 15000);
+  </script>
+</body>
+</html>
