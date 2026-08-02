@@ -29,7 +29,7 @@
       <h2 style="color:var(--indigo); font-family:'Montserrat',sans-serif;">Rota <span id="idRotaLabel"></span></h2>
       <p><span id="veiculoLabel"></span></p>
       <p><span id="qtdPedidosLabel"></span> pedidos</p>
-      <button class="btn-primario" onclick="iniciarRota()">Iniciar Rota</button>
+      <button class="btn-primario" onclick="iniciarRota()">Iniciar Rotas</button>
     </div>
 
     <div id="telaPedidos" style="display:none;">
@@ -162,12 +162,12 @@
 
     function botoesParaStatus(p) {
       if (p.STATUS === 'PENDENTE') {
-        return `<button class="btn-secundario" onclick="entregaIniciada('${p.ID_PEDIDO}')">Entrega iniciada</button>`;
+        return `<button class="btn-secundario" onclick="entregaIniciada('${p.ID_PEDIDO}')">Iniciar entrega</button>`;
       }
       if (p.STATUS === 'EM_ENTREGA') {
         return `
           <div class="grid-2">
-            <button class="btn-secundario" style="color:var(--sucesso); border-color:var(--sucesso)!important;" onclick="abrirFluxoEntregue('${p.ID_PEDIDO}')">Pedido Entregue</button>
+            <button class="btn-secundario" style="color:var(--sucesso); border-color:var(--sucesso)!important;" onclick="abrirFluxoEntregue('${p.ID_PEDIDO}')">Entrega finalizada</button>
             <button class="btn-secundario" style="color:var(--erro); border-color:var(--erro)!important;" onclick="abrirFluxoNaoRealizada('${p.ID_PEDIDO}')">Entrega não realizada</button>
           </div>
           <div id="fluxo_${p.ID_PEDIDO}"></div>
