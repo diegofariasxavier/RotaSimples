@@ -105,6 +105,10 @@
       }
     }
 
+    function statusParaClasse(status) {
+      return String(status).toLowerCase();
+    }
+
     function renderizarListaRotas() {
       const dataFiltro = document.getElementById('filtroData').value;
       const doDia = rotasDoMotorista.filter(r => String(r.data).slice(0, 10) === dataFiltro);
@@ -115,15 +119,28 @@
         return;
       }
 
-      div.innerHTML = doDia.map(r => `
-        <div class="card">
-          <h3 style="margin:0 0 6px; color:var(--indigo);">Rota ${r.idRota}</h3>
-          <p style="margin:2px 0;"><strong>Data:</strong> ${formatarDataBR(r.data)}</p>
-          <p style="margin:2px 0;"><strong>Veículo:</strong> ${r.veiculo}</p>
-          <p style="margin:2px 0;"><strong>Pedidos cadastrados:</strong> ${r.totalPedidos}</p>
-          ${botaoParaRota(r)}
+      div.innerHTML = doDia.map(r => {
+        const totalConcluido = r.entregues + r.naoEntregues;
+        const pct = r.totalPedidos ? Math.round((totalConcluido / r.totalPedidos) * 100) : 0;
+        return `
+        <div class="linha-rota">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
+            <div>
+              <strong>Rota ${r.idRota}</strong>
+              <p style="margin:4px 0 0; font-size:13px; color:#666;">${formatarDataBR(r.data)} · ${r.veiculo} · ${r.totalPedidos} pedidos</p>
+            </div>
+            <span class="status-pill ${statusParaClasse(r.statusGeral)}">${r.statusGeral.replace('_',' ')}</span>
+          </div>
+          ${r.statusGeral !== 'NAO_INICIADA' ? `
+            <div style="display:flex; align-items:center; gap:10px; margin-top:10px;">
+              <div class="progress-track"><div class="progress-fill" style="width:${pct}%;"></div></div>
+              <span style="font-size:12px; color:#666; white-space:nowrap;">${totalConcluido}/${r.totalPedidos}</span>
+            </div>
+          ` : ''}
+          <div style="margin-top:12px;">${botaoParaRota(r)}</div>
         </div>
-      `).join('');
+      `;
+      }).join('');
     }
 
     function botaoParaRota(r) {
@@ -172,11 +189,20 @@
       document.getElementById('tituloTopo').textContent = 'Rota ' + rotaAberta.idRota;
 
       const somenteLeitura = rotaAberta.statusGeral === 'FINALIZADA';
+      const entregues = pedidos.filter(p => p.STATUS === 'ENTREGUE').length;
+      const naoEntregues = pedidos.filter(p => p.STATUS === 'NAO_ENTREGUE').length;
+      const pct = pedidos.length ? Math.round(((entregues + naoEntregues) / pedidos.length) * 100) : 0;
 
       document.getElementById('resumoRotaAberta').innerHTML = `
-        <strong>Data:</strong> ${formatarDataBR(rotaAberta.data)} &nbsp;·&nbsp;
-        <strong>Veículo:</strong> ${rotaAberta.veiculo}
-        ${somenteLeitura ? '<p style="margin:8px 0 0; color:var(--sucesso); font-weight:700;">✓ Rota finalizada — somente visualização</p>' : ''}
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span><strong>Data:</strong> ${formatarDataBR(rotaAberta.data)} &nbsp;·&nbsp; <strong>Veículo:</strong> ${rotaAberta.veiculo}</span>
+          <span class="status-pill ${statusParaClasse(rotaAberta.statusGeral)}">${rotaAberta.statusGeral.replace('_',' ')}</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px; margin-top:10px;">
+          <div class="progress-track"><div class="progress-fill" style="width:${pct}%;"></div></div>
+          <span style="font-size:12px; color:#666; white-space:nowrap;">${entregues + naoEntregues}/${pedidos.length}</span>
+        </div>
+        ${somenteLeitura ? '<p style="margin:10px 0 0; color:var(--sucesso); font-weight:700;">✓ Rota finalizada — somente visualização</p>' : ''}
       `;
 
       document.getElementById('btnFinalizarRota').style.display = somenteLeitura ? 'none' : 'block';

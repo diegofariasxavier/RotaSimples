@@ -173,6 +173,103 @@ button {
 
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
+.app-shell {
+  display: flex;
+  min-height: calc(100vh - 65px);
+  align-items: flex-start;
+}
+
+.sidebar {
+  width: 200px;
+  background: #fff;
+  border-right: 1px solid var(--cinza-borda);
+  padding: 16px 10px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 65px;
+  align-self: flex-start;
+  min-height: calc(100vh - 65px);
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--texto);
+  cursor: pointer;
+  margin-bottom: 4px;
+}
+.nav-item.ativo { background: var(--pink-tudo); color: #fff; }
+.nav-item:hover:not(.ativo) { background: var(--cinza-fundo); }
+
+.main-content {
+  flex: 1;
+  padding: 24px;
+  max-width: 920px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: #fff;
+  border: 1px solid var(--cinza-borda);
+  border-radius: var(--raio);
+  padding: 16px;
+}
+.stat-card .rotulo { font-size: 13px; color: #777; margin: 0 0 6px; }
+.stat-card .valor { font-size: 26px; font-weight: 700; margin: 0; }
+
+.linha-rota {
+  background: #fff;
+  border: 1px solid var(--cinza-borda);
+  border-radius: var(--raio);
+  padding: 16px;
+  margin-bottom: 10px;
+}
+
+.progress-track {
+  flex: 1;
+  height: 8px;
+  background: var(--cinza-fundo);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.progress-fill { height: 100%; background: var(--indigo); }
+
+.status-pill {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.status-pill.nao_iniciada { background: #eee; color: #777; }
+.status-pill.em_andamento { background: #fff3d6; color: var(--alerta); }
+.status-pill.finalizada { background: #e1f6ec; color: var(--sucesso); }
+.status-pill.cancelada { background: #f0f0f0; color: #999; text-decoration: line-through; }
+
+@media (max-width: 720px) {
+  .app-shell { flex-direction: column; }
+  .sidebar {
+    width: 100%; position: static; min-height: auto;
+    display: flex; gap: 6px; overflow-x: auto; border-right: none;
+    border-bottom: 1px solid var(--cinza-borda);
+  }
+  .nav-item { white-space: nowrap; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .main-content { padding: 16px; }
+}
+
 .erro-msg {
   color: var(--erro);
   font-size: 13px;

@@ -19,75 +19,85 @@
     </span>
   </div>
 
-  <div class="container">
-    <div class="card" style="display:flex; gap:8px; padding:8px;">
-      <button class="btn-secundario" id="abaCriar" onclick="mostrarAba('criar')" style="border-color:var(--pink-tudo)!important; color:var(--pink-tudo);">Nova rota</button>
-      <button class="btn-secundario" id="abaPainel" onclick="mostrarAba('painel')">Painel ao vivo</button>
-      <button class="btn-secundario" id="abaHistorico" onclick="mostrarAba('historico')">Histórico</button>
-      <button class="btn-secundario" id="abaMotoristas" onclick="mostrarAba('motoristas')">Motoristas</button>
+  <div class="app-shell">
+    <div class="sidebar">
+      <div class="nav-item ativo" id="navCriar" onclick="mostrarAba('criar')"><i>➕</i> Nova rota</div>
+      <div class="nav-item" id="navPainel" onclick="mostrarAba('painel')"><i>📊</i> Painel ao vivo</div>
+      <div class="nav-item" id="navHistorico" onclick="mostrarAba('historico')"><i>🕘</i> Histórico</div>
+      <div class="nav-item" id="navMotoristas" onclick="mostrarAba('motoristas')"><i>👤</i> Motoristas</div>
     </div>
 
-    <!-- ==================== ABA: CRIAR ROTA ==================== -->
-    <div id="painelCriar">
-      <div class="card">
-        <label>Motorista</label>
-        <select id="selMotorista"></select>
+    <div class="main-content">
 
-        <label>Veículo</label>
-        <select id="selVeiculo"></select>
+      <!-- ==================== ABA: CRIAR ROTA ==================== -->
+      <div id="painelCriar">
+        <div class="card">
+          <label>Motorista</label>
+          <select id="selMotorista"></select>
 
-        <label>Data da operação</label>
-        <input type="date" id="inpData">
-      </div>
+          <label>Veículo</label>
+          <select id="selVeiculo"></select>
 
-      <div id="listaPedidosForm"></div>
-
-      <div class="btn-mais" onclick="adicionarPedido()">+</div>
-
-      <button class="btn-primario" onclick="salvarRota()">Salvar rota</button>
-      <div id="msgCriar" class="erro-msg"></div>
-    </div>
-
-    <!-- ==================== ABA: PAINEL AO VIVO ==================== -->
-    <div id="painelAoVivo" style="display:none;">
-      <div class="card">
-        <div id="graficoResumo"></div>
-      </div>
-      <div id="listaRotasAtivas"></div>
-    </div>
-
-    <!-- ==================== ABA: HISTÓRICO / GERENCIAR ROTAS ==================== -->
-    <div id="painelHistorico" style="display:none;">
-      <div class="card">
-        <div class="grid-2">
-          <div>
-            <label>De</label>
-            <input type="date" id="historicoDataInicio">
-          </div>
-          <div>
-            <label>Até</label>
-            <input type="date" id="historicoDataFim">
-          </div>
+          <label>Data da operação</label>
+          <input type="date" id="inpData">
         </div>
-        <button class="btn-primario" onclick="carregarHistorico()">Buscar</button>
-      </div>
-      <div id="listaHistorico"></div>
-    </div>
 
-    <!-- ==================== ABA: CADASTRAR MOTORISTAS ==================== -->
-    <div id="painelMotoristas" style="display:none;">
-      <div class="card">
-        <label>Nome / login do motorista</label>
-        <input type="text" id="novoLoginMotorista" placeholder="Ex: Motorista 4">
-        <label>Senha</label>
-        <input type="text" id="novaSenhaMotorista" placeholder="Ex: 1234">
-        <button class="btn-primario" onclick="cadastrarMotorista()">Cadastrar motorista</button>
-        <div id="msgMotorista" class="erro-msg"></div>
+        <div id="listaPedidosForm"></div>
+
+        <div class="btn-mais" onclick="adicionarPedido()">+</div>
+
+        <button class="btn-primario" onclick="salvarRota()">Salvar rota</button>
+        <div id="msgCriar" class="erro-msg"></div>
       </div>
-      <div class="card">
-        <strong>Motoristas cadastrados</strong>
-        <div id="listaMotoristasCadastrados" style="margin-top:10px;"></div>
+
+      <!-- ==================== ABA: PAINEL AO VIVO ==================== -->
+      <div id="painelAoVivo" style="display:none;">
+        <div class="stats-grid">
+          <div class="stat-card"><p class="rotulo">Rotas hoje</p><p class="valor" id="statRotasHoje">0</p></div>
+          <div class="stat-card"><p class="rotulo">Em andamento</p><p class="valor" id="statEmAndamento" style="color:var(--alerta);">0</p></div>
+          <div class="stat-card"><p class="rotulo">Entregues</p><p class="valor" id="statEntregues" style="color:var(--sucesso);">0</p></div>
+          <div class="stat-card"><p class="rotulo">Não entregues</p><p class="valor" id="statNaoEntregues" style="color:var(--erro);">0</p></div>
+        </div>
+        <div class="card">
+          <div id="graficoResumo"></div>
+        </div>
+        <div id="listaRotasAtivas"></div>
       </div>
+
+      <!-- ==================== ABA: HISTÓRICO / GERENCIAR ROTAS ==================== -->
+      <div id="painelHistorico" style="display:none;">
+        <div class="card">
+          <div class="grid-2">
+            <div>
+              <label>De</label>
+              <input type="date" id="historicoDataInicio">
+            </div>
+            <div>
+              <label>Até</label>
+              <input type="date" id="historicoDataFim">
+            </div>
+          </div>
+          <button class="btn-primario" onclick="carregarHistorico()">Buscar</button>
+        </div>
+        <div id="listaHistorico"></div>
+      </div>
+
+      <!-- ==================== ABA: CADASTRAR MOTORISTAS ==================== -->
+      <div id="painelMotoristas" style="display:none;">
+        <div class="card">
+          <label>Nome / login do motorista</label>
+          <input type="text" id="novoLoginMotorista" placeholder="Ex: Motorista 4">
+          <label>Senha</label>
+          <input type="text" id="novaSenhaMotorista" placeholder="Ex: 1234">
+          <button class="btn-primario" onclick="cadastrarMotorista()">Cadastrar motorista</button>
+          <div id="msgMotorista" class="erro-msg"></div>
+        </div>
+        <div class="card">
+          <strong>Motoristas cadastrados</strong>
+          <div id="listaMotoristasCadastrados" style="margin-top:10px;"></div>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -99,6 +109,12 @@
     let grafico = null;
     let motoristasCache = [];
     let veiculosCache = [];
+
+    function formatarDataBR(dataStr) {
+      const partes = String(dataStr).slice(0, 10).split('-');
+      if (partes.length !== 3) return dataStr;
+      return `${partes[2]}/${partes[1]}/${partes[0]}`;
+    }
 
     async function iniciar() {
       const hoje = new Date().toISOString().split('T')[0];
@@ -130,7 +146,7 @@
         msg.textContent = (msg.textContent ? msg.textContent + ' ' : '') + 'Não encontrei veículos cadastrados (verifique a aba Veiculos e o nome exato dela no Codigo.gs).';
       }
 
-      adicionarPedido(); // já começa com 1 campo de pedido
+      adicionarPedido();
     }
     iniciar();
 
@@ -194,10 +210,153 @@
       document.getElementById('painelAoVivo').style.display = aba === 'painel' ? 'block' : 'none';
       document.getElementById('painelHistorico').style.display = aba === 'historico' ? 'block' : 'none';
       document.getElementById('painelMotoristas').style.display = aba === 'motoristas' ? 'block' : 'none';
+
+      ['navCriar', 'navPainel', 'navHistorico', 'navMotoristas'].forEach(id => document.getElementById(id).classList.remove('ativo'));
+      const mapaNav = { criar: 'navCriar', painel: 'navPainel', historico: 'navHistorico', motoristas: 'navMotoristas' };
+      document.getElementById(mapaNav[aba]).classList.add('ativo');
+
       if (aba === 'painel') carregarPainel();
       if (aba === 'historico') carregarHistorico();
       if (aba === 'motoristas') carregarListaMotoristas();
     }
+
+    async function cadastrarMotorista() {
+      const login = document.getElementById('novoLoginMotorista').value.trim();
+      const senha = document.getElementById('novaSenhaMotorista').value.trim();
+      const msg = document.getElementById('msgMotorista');
+      msg.textContent = '';
+
+      if (!login || !senha) {
+        msg.textContent = 'Preencha o nome/login e a senha.';
+        return;
+      }
+
+      try {
+        const resp = await chamarAPI('cadastrarUsuario', { login, senha, perfil: 'MOTORISTA' });
+        if (resp.ok) {
+          document.getElementById('novoLoginMotorista').value = '';
+          document.getElementById('novaSenhaMotorista').value = '';
+          carregarListaMotoristas();
+          document.getElementById('selMotorista').innerHTML += `<option value="${login}">${login}</option>`;
+          motoristasCache.push({ login });
+        } else {
+          msg.textContent = resp.erro || 'Erro ao cadastrar.';
+        }
+      } catch (e) {
+        msg.textContent = 'Sem conexão. Tente novamente.';
+      }
+    }
+
+    async function carregarListaMotoristas() {
+      const resp = await chamarAPI('listarMotoristasComSenha', {});
+      const div = document.getElementById('listaMotoristasCadastrados');
+      div.innerHTML = (resp.motoristas || []).map(m => {
+        const senhaVisivel = m.senha && String(m.senha).length !== 64;
+        return `
+        <div class="linha-rota" style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <strong>${m.login}</strong><br>
+            <span style="font-size:13px; color:#666;">
+              ${senhaVisivel ? 'Senha: ' + m.senha : 'Senha antiga protegida — redefina abaixo'}
+            </span>
+          </div>
+          <button class="btn-secundario" style="width:auto; padding:8px 14px;" onclick="redefinirSenhaMotorista('${m.login}')">Redefinir senha</button>
+        </div>
+      `;
+      }).join('') || '<p>Nenhum motorista cadastrado ainda.</p>';
+    }
+
+    async function redefinirSenhaMotorista(login) {
+      const novaSenha = prompt(`Nova senha para ${login}:`);
+      if (!novaSenha) return;
+      const resp = await chamarAPI('redefinirSenha', { login, novaSenha });
+      if (resp.ok) {
+        carregarListaMotoristas();
+      } else {
+        alert(resp.erro || 'Erro ao redefinir senha.');
+      }
+    }
+
+    function statusParaClasse(status) {
+      return String(status).toLowerCase();
+    }
+
+    function linhaRota(r, comAcoes) {
+      const totalConcluido = r.entregues + r.naoEntregues;
+      const pct = r.totalPedidos ? Math.round((totalConcluido / r.totalPedidos) * 100) : 0;
+      const podeEditar = comAcoes && r.statusGeral === 'NAO_INICIADA';
+
+      return `
+        <div class="linha-rota" id="linha_${r.idRota}">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
+            <div>
+              <strong>Rota ${r.idRota}</strong> — ${r.motorista} — ${r.veiculo}
+              <p style="margin:4px 0 0; font-size:13px; color:#666;">Data: ${formatarDataBR(r.data)}</p>
+            </div>
+            <span class="status-pill ${statusParaClasse(r.statusGeral)}">${r.statusGeral.replace('_',' ')}</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px; margin-top:10px;">
+            <div class="progress-track"><div class="progress-fill" style="width:${pct}%;"></div></div>
+            <span style="font-size:12px; color:#666; white-space:nowrap;">${totalConcluido}/${r.totalPedidos}</span>
+          </div>
+          <p style="margin:8px 0 0; font-size:12px; color:#888;">
+            ${r.entregues} entregues · ${r.pendentes} pendentes · ${r.naoEntregues} não entregues
+          </p>
+          ${podeEditar ? `
+            <div class="grid-2" style="margin-top:10px;">
+              <button class="btn-secundario" onclick='abrirEdicaoRota(${JSON.stringify(r)})'>Editar</button>
+              <button class="btn-secundario" style="color:var(--erro); border-color:var(--erro)!important;" onclick="cancelarRotaClick('${r.idRota}')">Cancelar rota</button>
+            </div>
+            <div id="edicao_${r.idRota}"></div>
+          ` : ''}
+        </div>
+      `;
+    }
+
+    async function carregarPainel() {
+      const resp = await chamarAPI('listarRotasAtivas', {});
+      if (!resp.ok) return;
+
+      const hoje = new Date().toISOString().split('T')[0];
+      const rotasHoje = resp.rotas.filter(r => String(r.data).slice(0,10) === hoje);
+      const emAndamento = resp.rotas.filter(r => r.statusGeral === 'EM_ANDAMENTO').length;
+      const totalEntregues = resp.rotas.reduce((s, r) => s + r.entregues, 0);
+      const totalNaoEntregues = resp.rotas.reduce((s, r) => s + r.naoEntregues, 0);
+
+      document.getElementById('statRotasHoje').textContent = rotasHoje.length;
+      document.getElementById('statEmAndamento').textContent = emAndamento;
+      document.getElementById('statEntregues').textContent = totalEntregues;
+      document.getElementById('statNaoEntregues').textContent = totalNaoEntregues;
+
+      const seriesData = [totalEntregues, resp.rotas.reduce((s,r)=>s+r.pendentes,0), totalNaoEntregues];
+      const categorias = ['Entregues', 'Pendentes', 'Não entregues'];
+
+      const opcoesGrafico = {
+        chart: { type: 'bar', height: 220, toolbar: { show: false } },
+        series: [{ name: 'Pedidos', data: seriesData }],
+        xaxis: { categories: categorias, axisBorder: { show: false }, axisTicks: { show: false } },
+        yaxis: { show: false },
+        grid: { show: false },
+        dataLabels: { enabled: true, style: { fontSize: '13px', fontWeight: 700 } },
+        legend: { show: false },
+        colors: ['#22346a'],
+        plotOptions: { bar: { columnWidth: '45%', borderRadius: 6 } }
+      };
+
+      if (!grafico) {
+        grafico = new ApexCharts(document.querySelector('#graficoResumo'), opcoesGrafico);
+        grafico.render();
+      } else {
+        grafico.updateOptions(opcoesGrafico);
+      }
+
+      const lista = document.getElementById('listaRotasAtivas');
+      lista.innerHTML = resp.rotas.map(r => linhaRota(r, false)).join('') || '<p>Nenhuma rota criada ainda.</p>';
+    }
+
+    setInterval(() => {
+      if (document.getElementById('painelAoVivo').style.display !== 'none') carregarPainel();
+    }, 15000);
 
     async function carregarHistorico() {
       const dataInicio = document.getElementById('historicoDataInicio').value;
@@ -208,27 +367,7 @@
         div.innerHTML = '<div class="card"><p>Nenhuma rota encontrada nesse período.</p></div>';
         return;
       }
-      div.innerHTML = resp.rotas.map(r => cardHistorico(r)).join('');
-    }
-
-    function cardHistorico(r) {
-      const podeEditar = r.statusGeral === 'NAO_INICIADA';
-      return `
-        <div class="card" id="historico_${r.idRota}">
-          <strong>Rota ${r.idRota}</strong> — ${r.motorista} — ${r.veiculo}
-          <span class="badge ${r.statusGeral.toLowerCase()}" style="float:right;">${r.statusGeral.replace('_',' ')}</span>
-          <p style="margin:8px 0; font-size:13px; color:#666;">
-            Data: ${r.data} · ${r.entregues} entregues · ${r.pendentes} pendentes · ${r.naoEntregues} não entregues (de ${r.totalPedidos})
-          </p>
-          ${podeEditar ? `
-            <div class="grid-2">
-              <button class="btn-secundario" onclick='abrirEdicaoRota(${JSON.stringify(r)})'>Editar</button>
-              <button class="btn-secundario" style="color:var(--erro); border-color:var(--erro)!important;" onclick="cancelarRotaClick('${r.idRota}')">Cancelar rota</button>
-            </div>
-          ` : '<p style="font-size:12px; color:#999;">Rota já iniciada, finalizada ou cancelada — não pode mais ser editada.</p>'}
-          <div id="edicao_${r.idRota}"></div>
-        </div>
-      `;
+      div.innerHTML = resp.rotas.map(r => linhaRota(r, true)).join('');
     }
 
     function abrirEdicaoRota(rota) {
@@ -271,99 +410,6 @@
         alert(resp.erro || 'Erro ao cancelar rota.');
       }
     }
-
-    async function cadastrarMotorista() {
-      const login = document.getElementById('novoLoginMotorista').value.trim();
-      const senha = document.getElementById('novaSenhaMotorista').value.trim();
-      const msg = document.getElementById('msgMotorista');
-      msg.textContent = '';
-
-      if (!login || !senha) {
-        msg.textContent = 'Preencha o nome/login e a senha.';
-        return;
-      }
-
-      try {
-        const resp = await chamarAPI('cadastrarUsuario', { login, senha, perfil: 'MOTORISTA' });
-        if (resp.ok) {
-          document.getElementById('novoLoginMotorista').value = '';
-          document.getElementById('novaSenhaMotorista').value = '';
-          carregarListaMotoristas();
-          // Atualiza também o dropdown da tela de criar rota
-          document.getElementById('selMotorista').innerHTML += `<option value="${login}">${login}</option>`;
-        } else {
-          msg.textContent = resp.erro || 'Erro ao cadastrar.';
-        }
-      } catch (e) {
-        msg.textContent = 'Sem conexão. Tente novamente.';
-      }
-    }
-
-    async function carregarListaMotoristas() {
-      const resp = await chamarAPI('listarMotoristasComSenha', {});
-      const div = document.getElementById('listaMotoristasCadastrados');
-      div.innerHTML = (resp.motoristas || []).map(m => {
-        const senhaVisivel = m.senha && String(m.senha).length !== 64; // 64 = ainda está em hash antigo
-        return `
-        <div class="pedido-item" style="display:flex; justify-content:space-between; align-items:center;">
-          <div>
-            <strong>${m.login}</strong><br>
-            <span style="font-size:13px; color:#666;">
-              ${senhaVisivel ? 'Senha: ' + m.senha : 'Senha antiga protegida — redefina abaixo'}
-            </span>
-          </div>
-          <button class="btn-secundario" style="width:auto; padding:8px 14px;" onclick="redefinirSenhaMotorista('${m.login}')">Redefinir senha</button>
-        </div>
-      `;
-      }).join('') || '<p>Nenhum motorista cadastrado ainda.</p>';
-    }
-
-    async function redefinirSenhaMotorista(login) {
-      const novaSenha = prompt(`Nova senha para ${login}:`);
-      if (!novaSenha) return;
-      const resp = await chamarAPI('redefinirSenha', { login, novaSenha });
-      if (resp.ok) {
-        carregarListaMotoristas();
-      } else {
-        alert(resp.erro || 'Erro ao redefinir senha.');
-      }
-    }
-
-    async function carregarPainel() {
-      const resp = await chamarAPI('listarRotasAtivas', {});
-      if (!resp.ok) return;
-
-      const totalEntregues = resp.rotas.reduce((s, r) => s + r.entregues, 0);
-      const totalSaidos = resp.rotas.reduce((s, r) => s + r.totalPedidos, 0);
-
-      if (!grafico) {
-        grafico = new ApexCharts(document.querySelector('#graficoResumo'), {
-          chart: { type: 'bar', height: 220 },
-          series: [{ name: 'Pedidos', data: [totalSaidos, totalEntregues] }],
-          xaxis: { categories: ['Em rota (total)', 'Entregues'] },
-          colors: ['#22346a']
-        });
-        grafico.render();
-      } else {
-        grafico.updateSeries([{ data: [totalSaidos, totalEntregues] }]);
-      }
-
-      const lista = document.getElementById('listaRotasAtivas');
-      lista.innerHTML = resp.rotas.map(r => `
-        <div class="card">
-          <strong>${r.motorista}</strong> — ${r.veiculo}
-          <span class="badge ${r.statusGeral.toLowerCase()}" style="float:right;">${r.statusGeral.replace('_',' ')}</span>
-          <p style="margin:8px 0 0; font-size:13px; color:#666;">
-            ${r.entregues} entregues · ${r.pendentes} pendentes · ${r.naoEntregues} não entregues (de ${r.totalPedidos})
-          </p>
-        </div>
-      `).join('') || '<p>Nenhuma rota criada ainda.</p>';
-    }
-
-    // Refresh automático do painel a cada 15s (padrão dos seus outros dashboards)
-    setInterval(() => {
-      if (document.getElementById('painelAoVivo').style.display !== 'none') carregarPainel();
-    }, 15000);
   </script>
 </body>
 </html>
