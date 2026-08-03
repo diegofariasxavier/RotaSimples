@@ -23,6 +23,7 @@
     <div class="card" style="display:flex; gap:8px; padding:8px;">
       <button class="btn-secundario" id="abaCriar" onclick="mostrarAba('criar')" style="border-color:var(--pink-tudo)!important; color:var(--pink-tudo);">Nova rota</button>
       <button class="btn-secundario" id="abaPainel" onclick="mostrarAba('painel')">Painel ao vivo</button>
+      <button class="btn-secundario" id="abaHistorico" onclick="mostrarAba('historico')">Histórico</button>
       <button class="btn-secundario" id="abaMotoristas" onclick="mostrarAba('motoristas')">Motoristas</button>
     </div>
 
@@ -55,6 +56,24 @@
       <div id="listaRotasAtivas"></div>
     </div>
 
+    <!-- ==================== ABA: HISTÓRICO / GERENCIAR ROTAS ==================== -->
+    <div id="painelHistorico" style="display:none;">
+      <div class="card">
+        <div class="grid-2">
+          <div>
+            <label>De</label>
+            <input type="date" id="historicoDataInicio">
+          </div>
+          <div>
+            <label>Até</label>
+            <input type="date" id="historicoDataFim">
+          </div>
+        </div>
+        <button class="btn-primario" onclick="carregarHistorico()">Buscar</button>
+      </div>
+      <div id="listaHistorico"></div>
+    </div>
+
     <!-- ==================== ABA: CADASTRAR MOTORISTAS ==================== -->
     <div id="painelMotoristas" style="display:none;">
       <div class="card">
@@ -78,17 +97,22 @@
     document.getElementById('nomeUsuarioLogado').textContent = sessao ? sessao.usuario : '';
     let contadorPedidos = 0;
     let grafico = null;
+    let motoristasCache = [];
+    let veiculosCache = [];
 
     async function iniciar() {
       const hoje = new Date().toISOString().split('T')[0];
       document.getElementById('inpData').value = hoje;
+      document.getElementById('historicoDataInicio').value = hoje;
+      document.getElementById('historicoDataFim').value = hoje;
 
       const msg = document.getElementById('msgCriar');
 
       const motoristas = await chamarAPI('listarMotoristas', {});
       const selM = document.getElementById('selMotorista');
       if (motoristas.ok && motoristas.motoristas.length) {
-        motoristas.motoristas.forEach(m => {
+        motoristasCache = motoristas.motoristas;
+        motoristasCache.forEach(m => {
           selM.innerHTML += `<option value="${m.login}">${m.login}</option>`;
         });
       } else {
@@ -98,7 +122,8 @@
       const veiculos = await chamarAPI('listarVeiculos', {});
       const selV = document.getElementById('selVeiculo');
       if (veiculos.ok && veiculos.veiculos.length) {
-        veiculos.veiculos.forEach(v => {
+        veiculosCache = veiculos.veiculos;
+        veiculosCache.forEach(v => {
           selV.innerHTML += `<option value="${v.placa}">${v.placa}</option>`;
         });
       } else {
@@ -167,9 +192,84 @@
     function mostrarAba(aba) {
       document.getElementById('painelCriar').style.display = aba === 'criar' ? 'block' : 'none';
       document.getElementById('painelAoVivo').style.display = aba === 'painel' ? 'block' : 'none';
+      document.getElementById('painelHistorico').style.display = aba === 'historico' ? 'block' : 'none';
       document.getElementById('painelMotoristas').style.display = aba === 'motoristas' ? 'block' : 'none';
       if (aba === 'painel') carregarPainel();
+      if (aba === 'historico') carregarHistorico();
       if (aba === 'motoristas') carregarListaMotoristas();
+    }
+
+    async function carregarHistorico() {
+      const dataInicio = document.getElementById('historicoDataInicio').value;
+      const dataFim = document.getElementById('historicoDataFim').value;
+      const resp = await chamarAPI('listarHistoricoRotas', { dataInicio, dataFim });
+      const div = document.getElementById('listaHistorico');
+      if (!resp.ok || !resp.rotas.length) {
+        div.innerHTML = '<div class="card"><p>Nenhuma rota encontrada nesse período.</p></div>';
+        return;
+      }
+      div.innerHTML = resp.rotas.map(r => cardHistorico(r)).join('');
+    }
+
+    function cardHistorico(r) {
+      const podeEditar = r.statusGeral === 'NAO_INICIADA';
+      return `
+        <div class="card" id="historico_${r.idRota}">
+          <strong>Rota ${r.idRota}</strong> — ${r.motorista} — ${r.veiculo}
+          <span class="badge ${r.statusGeral.toLowerCase()}" style="float:right;">${r.statusGeral.replace('_',' ')}</span>
+          <p style="margin:8px 0; font-size:13px; color:#666;">
+            Data: ${r.data} · ${r.entregues} entregues · ${r.pendentes} pendentes · ${r.naoEntregues} não entregues (de ${r.totalPedidos})
+          </p>
+          ${podeEditar ? `
+            <div class="grid-2">
+              <button class="btn-secundario" onclick='abrirEdicaoRota(${JSON.stringify(r)})'>Editar</button>
+              <button class="btn-secundario" style="color:var(--erro); border-color:var(--erro)!important;" onclick="cancelarRotaClick('${r.idRota}')">Cancelar rota</button>
+            </div>
+          ` : '<p style="font-size:12px; color:#999;">Rota já iniciada, finalizada ou cancelada — não pode mais ser editada.</p>'}
+          <div id="edicao_${r.idRota}"></div>
+        </div>
+      `;
+    }
+
+    function abrirEdicaoRota(rota) {
+      const div = document.getElementById(`edicao_${rota.idRota}`);
+      div.innerHTML = `
+        <div style="margin-top:10px; border-top:1px solid var(--cinza-borda); padding-top:10px;">
+          <label>Motorista</label>
+          <select id="editMotorista_${rota.idRota}">
+            ${motoristasCache.map(m => `<option value="${m.login}" ${m.login === rota.motorista ? 'selected' : ''}>${m.login}</option>`).join('')}
+          </select>
+          <label>Veículo</label>
+          <select id="editVeiculo_${rota.idRota}">
+            ${veiculosCache.map(v => `<option value="${v.placa}" ${v.placa === rota.veiculo ? 'selected' : ''}>${v.placa}</option>`).join('')}
+          </select>
+          <label>Data</label>
+          <input type="date" id="editData_${rota.idRota}" value="${String(rota.data).slice(0,10)}">
+          <button class="btn-primario" onclick="salvarEdicaoRota('${rota.idRota}')">Salvar edição</button>
+        </div>
+      `;
+    }
+
+    async function salvarEdicaoRota(idRota) {
+      const motorista = document.getElementById(`editMotorista_${idRota}`).value;
+      const veiculo = document.getElementById(`editVeiculo_${idRota}`).value;
+      const data = document.getElementById(`editData_${idRota}`).value;
+      const resp = await chamarAPI('editarRota', { idRota, motorista, veiculo, data });
+      if (resp.ok) {
+        carregarHistorico();
+      } else {
+        alert(resp.erro || 'Erro ao editar rota.');
+      }
+    }
+
+    async function cancelarRotaClick(idRota) {
+      if (!confirm(`Cancelar a rota ${idRota}? Essa ação libera os números de pedido dela pra serem usados em outra rota.`)) return;
+      const resp = await chamarAPI('cancelarRota', { idRota });
+      if (resp.ok) {
+        carregarHistorico();
+      } else {
+        alert(resp.erro || 'Erro ao cancelar rota.');
+      }
     }
 
     async function cadastrarMotorista() {
